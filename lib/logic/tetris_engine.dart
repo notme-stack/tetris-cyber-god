@@ -69,9 +69,34 @@ class TetrisEngine {
     if (_state.status != GameStatus.running) return;
     final nextRotation =
         (_state.rotation + 1) % _activeTetromino.rotations.length;
-    if (_canPlace(_state.activePosition, nextRotation)) {
-      _state = _state.copyWith(rotation: nextRotation);
-      _emit();
+
+    // Standard Rotation System (SRS) simplified wall kicks
+    // Try: Center -> Left -> Right -> Up -> Down -> Left-Up -> Right-Up
+    const kicks = [
+      Position(0, 0), // Basic rotation
+      Position(-1, 0), // Kick left (against right wall)
+      Position(1, 0), // Kick right (against left wall)
+      Position(0, -1), // Kick up (against floor/stack)
+      Position(-1, -1), // Kick left-up
+      Position(1, -1), // Kick right-up
+      Position(-2, 0), // Kick left 2 (for I piece)
+      Position(2, 0), // Kick right 2 (for I piece)
+    ];
+
+    for (final kick in kicks) {
+      final kickedPos = Position(
+        _state.activePosition.x + kick.x,
+        _state.activePosition.y + kick.y,
+      );
+      if (_canPlace(kickedPos, nextRotation)) {
+        _state = _state.copyWith(
+          rotation: nextRotation,
+          activePosition: kickedPos,
+        );
+        _lockRequestTime = null; // Reset lock delay on rotation
+        _emit();
+        return;
+      }
     }
   }
 
@@ -85,6 +110,9 @@ class TetrisEngine {
     _lockPiece();
   }
 
+  DateTime? _lockRequestTime;
+  static const _lockDelayDuration = Duration(milliseconds: 500);
+
   void tick() {
     if (_state.status != GameStatus.running) return;
     if (_canPlace(
@@ -97,9 +125,17 @@ class TetrisEngine {
           _state.activePosition.y + 1,
         ),
       );
+      _lockRequestTime = null; // Reset lock timer if we fell freely
       _emit();
     } else {
-      _lockPiece();
+      // Piece has landed. Check lock delay.
+      final now = DateTime.now();
+      if (_lockRequestTime == null) {
+        _lockRequestTime = now;
+      } else if (now.difference(_lockRequestTime!) > _lockDelayDuration) {
+        _lockPiece();
+        _lockRequestTime = null;
+      }
     }
   }
 
@@ -111,9 +147,16 @@ class TetrisEngine {
     );
     if (_canPlace(next, _state.rotation)) {
       _state = _state.copyWith(activePosition: next);
+      // Successful move resets lock delay (classic "infinity" rule behavior, simplified)
+      _lockRequestTime = null;
       _emit();
     } else if (dy == 1) {
-      _lockPiece();
+      // If soft drop failed (hit bottom), we treat it like a tick landing
+      // But usually soft drop is manual. We can just let the next tick handle the lock.
+      // Or we can start the lock timer here.
+      if (_lockRequestTime == null) {
+        _lockRequestTime = DateTime.now();
+      }
     }
   }
 
@@ -261,7 +304,19 @@ class TetrisEngine {
     return max(AppConstants.minFallIntervalMs, speed.round());
   }
 
-  void _emit() => _controller.add(_state);
+  void _emit() {
+    final ghost = _calculateGhostPosition();
+    _state = _state.copyWith(ghostPosition: ghost);
+    _controller.add(_state);
+  }
+
+  Position _calculateGhostPosition() {
+    var position = _state.activePosition;
+    while (_canPlace(Position(position.x, position.y + 1), _state.rotation)) {
+      position = Position(position.x, position.y + 1);
+    }
+    return position;
+  }
 
   static GameState _initialState() {
     final random = Random();

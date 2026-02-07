@@ -8,6 +8,7 @@ class GameState {
   final TetrominoType activeType;
   final int rotation;
   final Position activePosition;
+  final Position? ghostPosition;
   final TetrominoType nextType;
   final int score;
   final int level;
@@ -22,6 +23,7 @@ class GameState {
     required this.activeType,
     required this.rotation,
     required this.activePosition,
+    this.ghostPosition,
     required this.nextType,
     required this.score,
     required this.level,
@@ -37,6 +39,7 @@ class GameState {
     TetrominoType? activeType,
     int? rotation,
     Position? activePosition,
+    Position? ghostPosition,
     TetrominoType? nextType,
     int? score,
     int? level,
@@ -51,6 +54,7 @@ class GameState {
       activeType: activeType ?? this.activeType,
       rotation: rotation ?? this.rotation,
       activePosition: activePosition ?? this.activePosition,
+      ghostPosition: ghostPosition ?? this.ghostPosition,
       nextType: nextType ?? this.nextType,
       score: score ?? this.score,
       level: level ?? this.level,

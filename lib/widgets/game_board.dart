@@ -196,6 +196,35 @@ class _BoardPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paintBorder);
 
     final tetromino = _activeTetromino();
+
+    // Draw Ghost Piece
+    if (state.ghostPosition != null) {
+      final ghostPaint = Paint()
+        ..color = AppColors.textPrimary.withOpacity(0.15)
+        ..style = PaintingStyle.fill;
+
+      final ghostBorderPaint = Paint()
+        ..color = AppColors.textPrimary.withOpacity(0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+
+      for (final cell in tetromino.cells(state.rotation)) {
+        final x = state.ghostPosition!.x + cell.x;
+        final y = state.ghostPosition!.y + cell.y;
+        if (x < 0 ||
+            x >= AppConstants.boardWidth ||
+            y < 0 ||
+            y >= AppConstants.boardHeight) {
+          continue;
+        }
+        final left = x * cellWidth;
+        final top = y * cellHeight;
+        final rect = Rect.fromLTWH(left, top, cellWidth, cellHeight);
+        canvas.drawRect(rect, ghostPaint);
+        canvas.drawRect(rect, ghostBorderPaint);
+      }
+    }
+
     for (final cell in tetromino.cells(state.rotation)) {
       final x = state.activePosition.x + cell.x;
       final y = state.activePosition.y + cell.y;

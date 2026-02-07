@@ -35,7 +35,6 @@ class _ArenaScreenState extends State<ArenaScreen> {
   late GameState _state;
   TetrominoType? _lastActiveType;
   Offset? _dragStart;
-  Offset? _dragLatest;
   bool _flashClear = false;
   bool _resultShown = false;
   String _taunt = 'System online.';
@@ -185,6 +184,8 @@ class _ArenaScreenState extends State<ArenaScreen> {
     );
   }
 
+  double _accumulatedDeltaX = 0.0;
+
   void _onTap() {
     _engine.rotate();
     _haptics.mediumImpact();
@@ -192,42 +193,57 @@ class _ArenaScreenState extends State<ArenaScreen> {
 
   void _onPanStart(DragStartDetails details) {
     _dragStart = details.localPosition;
-    _dragLatest = details.localPosition;
+    _accumulatedDeltaX = 0.0;
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    _dragLatest = details.localPosition;
+    // Continuous Horizontal Movement
+    _accumulatedDeltaX += details.delta.dx;
+
+    // Calculate block size dynamically based on board width
+    // Assuming the board takes up most of the width, minus padding.
+    // For safety, we estimate block size based on screen width.
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Board is roughly full width minus padding (AppSpacing.md * 2)
+    final boardWidthPixels = screenWidth - (AppSpacing.md * 2);
+    final blockSize = boardWidthPixels / AppConstants.boardWidth;
+
+    // Sensitivity: Move when dragged about 70% of a block width
+    final threshold = blockSize * 0.7;
+
+    if (_accumulatedDeltaX.abs() >= threshold) {
+      if (_accumulatedDeltaX > 0) {
+        _engine.moveRight();
+        // Reduce accumulator, but keep some momentum if dragging fast
+        _accumulatedDeltaX -= blockSize;
+      } else {
+        _engine.moveLeft();
+        _accumulatedDeltaX += blockSize;
+      }
+      _haptics.lightImpact();
+
+      // Prevent runaway accumulator
+      if (_accumulatedDeltaX.abs() > blockSize) {
+        _accumulatedDeltaX = 0.0;
+      }
+    }
   }
 
   void _onPanEnd(DragEndDetails details) {
     final start = _dragStart;
-    final latest = _dragLatest;
     if (start == null) return;
+
     final velocity = details.velocity.pixelsPerSecond;
     _dragStart = null;
-    _dragLatest = null;
+    _accumulatedDeltaX = 0.0;
 
-    final delta = latest != null ? latest - start : Offset.zero;
-    final distance = delta.distance;
-    final meetsVelocity =
-        velocity.distance >= AppConstants.gestureVelocityThreshold;
-    final meetsDistance = distance >= AppConstants.gestureDistanceThreshold;
-    if (!meetsVelocity && !meetsDistance) return;
-
-    final useVelocity = meetsVelocity ? velocity : Offset(delta.dx, delta.dy);
-    if (useVelocity.dx.abs() > useVelocity.dy.abs()) {
-      if (useVelocity.dx > 0) {
-        _engine.moveRight();
-        _haptics.lightImpact();
-      } else {
-        _engine.moveLeft();
-        _haptics.lightImpact();
-      }
-    } else {
-      if (useVelocity.dy > 0) {
-        _engine.hardDrop();
-        _haptics.heavyImpact();
-      }
+    // Hard Drop Logic (Swipe Down Fast)
+    // Only trigger if purely vertical and fast
+    if (velocity.dy > AppConstants.gestureVelocityThreshold &&
+        velocity.dy.abs() > velocity.dx.abs() * 2) {
+      // Ensure clear vertical intention
+      _engine.hardDrop();
+      _haptics.heavyImpact();
     }
   }
 

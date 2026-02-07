@@ -25,10 +25,13 @@ class _SplashScreenState extends State<SplashScreen> {
         _progress = (_progress + 0.05).clamp(0.0, 1.0);
       });
     });
-    _navTimer = Timer(const Duration(milliseconds: AppConstants.bootTotalMs), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/lobby');
-    });
+    _navTimer = Timer(
+      const Duration(milliseconds: AppConstants.bootTotalMs),
+      () {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/login');
+      },
+    );
   }
 
   @override
@@ -52,10 +55,9 @@ class _SplashScreenState extends State<SplashScreen> {
               Text(
                 'INITIALISING LINK',
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.accentPlayer),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.accentPlayer),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
@@ -74,9 +76,16 @@ class _SplashScreenState extends State<SplashScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.surfaceSecondary,
                         borderRadius: BorderRadius.circular(AppRadii.md),
-                        border: Border.all(color: AppColors.accentPlayer, width: AppBorders.thin),
+                        border: Border.all(
+                          color: AppColors.accentPlayer,
+                          width: AppBorders.thin,
+                        ),
                       ),
-                      child: const Icon(Icons.grid_4x4, color: AppColors.accentPlayer, size: 48),
+                      child: const Icon(
+                        Icons.grid_4x4,
+                        color: AppColors.accentPlayer,
+                        size: 48,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
@@ -95,15 +104,23 @@ class _SplashScreenState extends State<SplashScreen> {
               LinearProgressIndicator(
                 value: _progress,
                 backgroundColor: AppColors.surfaceSecondary,
-                valueColor: const AlwaysStoppedAnimation(AppColors.accentPlayer),
+                valueColor: const AlwaysStoppedAnimation(
+                  AppColors.accentPlayer,
+                ),
                 minHeight: AppSpacing.sm,
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('SYSTEM BOOT IN PROGRESS', style: Theme.of(context).textTheme.bodyMedium),
-                  Text('${(_progress * 100).round()}%', style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    'SYSTEM BOOT IN PROGRESS',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    '${(_progress * 100).round()}%',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
