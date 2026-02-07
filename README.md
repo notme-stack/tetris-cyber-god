@@ -1,4 +1,4 @@
-# cyber_gods_tetris
+# tetris_cyber_gods
 
 A new Flutter project.
 

@@ -6,16 +6,16 @@ import 'screens/result/result_screen.dart';
 import 'screens/splash/splash_screen.dart';
 
 void main() {
-  runApp(const CyberGodsTetrisApp());
+  runApp(const TetrisCyberGodsApp());
 }
 
-class CyberGodsTetrisApp extends StatelessWidget {
-  const CyberGodsTetrisApp({super.key});
+class TetrisCyberGodsApp extends StatelessWidget {
+  const TetrisCyberGodsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cyber Gods Tetris',
+      title: 'Tetris_Cyber_Gods',
       theme: AppTheme.buildTheme(),
       routes: {
         '/': (_) => const SplashScreen(),

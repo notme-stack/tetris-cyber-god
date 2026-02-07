@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cyber_gods_tetris"
+    namespace = "com.example.tetris_cyber_gods"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.cyber_gods_tetris"
+        applicationId = "com.example.tetris_cyber_gods"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

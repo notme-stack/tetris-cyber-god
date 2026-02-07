@@ -1,4 +1,4 @@
-package com.example.cyber_gods_tetris
+package com.example.tetris_cyber_gods
 
 import io.flutter.embedding.android.FlutterActivity
 
